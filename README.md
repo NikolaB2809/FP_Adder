@@ -8,3 +8,7 @@
 ## Please fill in your project documentation in this README.md file 
 
 Refer to [README](docs/source/index.md) for this sample project documentation.
+
+UNIC-CASS Floating-point adder submission.
+
+Currently in mock tape-out phase. WIP
