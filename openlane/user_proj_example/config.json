@@ -36,6 +36,7 @@
     "pdk::sky130*": {
         "FP_CORE_UTIL": 45,
         "RT_MAX_LAYER": "met4",
+        "DECAP_CELL": "sky130_fd_sc_hd__decap_3",
         "scl::sky130_fd_sc_hd": {
             "CLOCK_PERIOD": 25
         },
