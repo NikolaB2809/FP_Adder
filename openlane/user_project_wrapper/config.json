@@ -66,6 +66,8 @@
     "FP_PDN_HWIDTH": 3.1,
     "FP_PDN_VSPACING": "expr::(5 * $FP_PDN_CORE_RING_VWIDTH)",
     "FP_PDN_HSPACING": "expr::(5 * $FP_PDN_CORE_RING_HWIDTH)",
+    "DECAP_CELL": "sky130_fd_sc_hd__decap_3",
+    "FILL_CELL": "sky130_fd_sc_hd__fill_2 sky130_fd_sc_hd__fill_1",
     "VDD_NETS": [
         "vccd1",
         "vccd2",
@@ -83,7 +85,6 @@
         "RT_MAX_LAYER": "met4",
         "DIE_AREA": "0 0 2920 3520",
         "FP_DEF_TEMPLATE": "dir::fixed_dont_change/user_project_wrapper.def",
-        "DECAP_CELL": "sky130_fd_sc_hd__decap_3",
         "scl::sky130_fd_sc_hd": {
             "CLOCK_PERIOD": 25
         },
