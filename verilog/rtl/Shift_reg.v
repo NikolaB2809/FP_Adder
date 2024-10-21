@@ -12,7 +12,7 @@ reg [5:0] count;
 reg [31:0] value;
 integer i;
 
-always @(posedge(clk_in) or rst_in) begin
+always @(posedge(clk_in) or posedge(rst_in)) begin
     if (rst_in == 1'b1) begin
         parallel_out <= 32'b0;
         input_rdy <= 1'b1;
@@ -28,7 +28,7 @@ always @(posedge(clk_in) or rst_in) begin
                 value[i - 1] <= value[i];
             end
             value[31] <= serial_in;
-            count = count + 1;
+            count <= count + 1;
         end
         if (en_in == 1'b1) begin
             parallel_out <= value;

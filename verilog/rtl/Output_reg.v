@@ -14,7 +14,7 @@ reg [5:0] count;
 reg [31:0] value;
 integer i;
 
-always @(posedge(clk_in) or rst_in) begin
+always @(posedge(clk_in) or posedge(rst_in)) begin
     if (rst_in == 1'b1) begin
         serial_out <= 1'b0;
         count <= 6'b0;
@@ -36,7 +36,7 @@ always @(posedge(clk_in) or rst_in) begin
                             value[i] <= value[i + 1];
                         end
                         value[31] <= 1'b0;
-                        count = count + 1;
+                        count <= count + 1;
                     end
                 end
             end

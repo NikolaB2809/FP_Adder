@@ -27,7 +27,7 @@ always @(posedge(clk_in) or posedge(rst_in)) begin
                 count <= 6'b0;
             end else begin
                 out <= 1'b0;
-                count = count + 1;
+                count <= count + 1;
             end
         end
     end

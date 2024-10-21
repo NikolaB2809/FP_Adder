@@ -53,16 +53,21 @@ module user_proj_example #(
 
 );
 
-    wire [6:0] led_out;
-    seven_segment_seconds seven_segment_seconds(
-        .clk(wb_clk_i),
-        .reset(wb_rst_i),
-        .update_compare(1'b0),
-        .compare_in(24'h100),
-        .led_out(led_out)
+    FP_Adder FP_Adder(
+        .serial1_in(io_in[0]),
+        .serial2_in(io_in[1]),
+        .serial3_in(io_in[2]),
+        .serial4_in(io_in[3]),
+        .wr_in(io_in[5]),
+        .setup_serial_in(io_in[6]),
+        .clk_in(wb_clk_i),
+        .rst_in(wb_rst_i),
+        .output_clk_in(io_in[7]),
+        .input_rdy(io_out[0]),
+        .output_rdy(io_out[1]),
+        .serial_out(io_out[2])
     );
 
-    assign io_out = {11'h0, led_out};
     assign io_oeb = 16'h0;
 
 

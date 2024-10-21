@@ -6,22 +6,22 @@ module Setup_reg(
     output reg [7:0] parallel_out
 );
 
-integer i;
+count [5:0];
 
 
-always @(posedge(clk_in) or posedge(en_in)) begin
+always @(posedge(clk_in) or posedge(rst_in)) begin
     if (rst_in == 1'b1) begin
-        parallel_out <= 8'b0;
-        i = 0;
+        parallel_out <= 8'b00000000;
+        count <= 6'b000000;
     end else begin
         if (en_in == 1'b1) begin
-            if (i > 24) begin
+            if (count > 24) begin
                 parallel_out[i - 25] <= serial_in;
             end 
-            if (i < 32) begin
-                i = i + 1;
+            if (count < 32) begin
+                count <= count + 1;
             end else begin
-                i = 0;
+                count <= 6'b000000;
             end
         end
     end
