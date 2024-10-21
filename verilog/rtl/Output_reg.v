@@ -26,6 +26,7 @@ always @(posedge(clk_in) or rst_in) begin
             value <= parallel_in;
             input_rdy <= 1'b0;
             output_rdy <= 1'b1;
+            serial_out <= 1'b0;
         end else begin
             if (output_rdy == 1'b1) begin
                 if (output_read_in == 1'b1) begin

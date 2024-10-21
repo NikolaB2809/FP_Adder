@@ -5,6 +5,6 @@ module Output_clock_selector(
     output clk_out
 );
 
-assign clk_out = (sel_in & clk_internal_in) | (~sel_in & clk_external_in);
+assign clk_out = (!sel_in & clk_internal_in) | (sel_in & clk_external_in);
 
 endmodule;
