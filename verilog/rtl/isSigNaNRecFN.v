@@ -38,7 +38,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *----------------------------------------------------------------------------*/
 
 module
-    isSigNaNRecFN#(parameter expWidth = 3, parameter sigWidth = 3) (
+    isSigNaNRecFN#(parameter expWidth = 8, parameter sigWidth = 24) (
         input [(expWidth + sigWidth):0] in, output isSigNaN
     );
 

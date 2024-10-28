@@ -49,4 +49,4 @@ always @(posedge(clk_in) or posedge(rst_in)) begin
     end
 end
 
-endmodule;
+endmodule

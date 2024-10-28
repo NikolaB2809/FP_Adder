@@ -37,7 +37,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 `include "HardFloat_consts.vi"
 `include "HardFloat_specialize.vi"
 
-// Added files:
 `include "HardFloat_rawFN.v"
 `include "HardFloat_primitives.v"
 `include "isSigNaNRecFN.v"
@@ -47,7 +46,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *----------------------------------------------------------------------------*/
 
 module
-    addRecFNToRaw#(parameter expWidth = 3, parameter sigWidth = 3) (
+    addRecFNToRaw#(parameter expWidth = 8, parameter sigWidth = 24) (
         input [(`floatControlWidth - 1):0] control,
         input subOp,
         input [(expWidth + sigWidth):0] a,
@@ -65,7 +64,7 @@ module
 
     /*------------------------------------------------------------------------
     *------------------------------------------------------------------------*/
-    localparam alignDistWidth = clog2(sigWidth);
+    //localparam 4 = clog2(sigWidth);
     /*------------------------------------------------------------------------
     *------------------------------------------------------------------------*/
     wire isNaNA, isInfA, isZeroA, signA;
@@ -88,14 +87,14 @@ module
     wire eqSigns = (signA == effSignB);
     wire notEqSigns_signZero = (roundingMode == `round_min) ? 1 : 0;
     wire signed [(expWidth + 1):0] sDiffExps = sExpA - sExpB;
-    wire [(alignDistWidth - 1):0] modNatAlignDist =
+    wire [(4 - 1):0] modNatAlignDist =
         (sDiffExps < 0) ? sExpB - sExpA : sDiffExps;
     wire isMaxAlign =
-        (sDiffExps>>>alignDistWidth != 0)
-            && ((sDiffExps>>>alignDistWidth != -1)
-                    || (sDiffExps[(alignDistWidth - 1):0] == 0));
-    wire [(alignDistWidth - 1):0] alignDist =
-        isMaxAlign ? (1<<alignDistWidth) - 1 : modNatAlignDist;
+        (sDiffExps>>>4 != 0)
+            && ((sDiffExps>>>4 != -1)
+                    || (sDiffExps[(4 - 1):0] == 0));
+    wire [(4 - 1):0] alignDist =
+        isMaxAlign ? (1<<4) - 1 : modNatAlignDist;
     wire closeSubMags = !eqSigns && !isMaxAlign && (modNatAlignDist <= 1);
     /*------------------------------------------------------------------------
     *------------------------------------------------------------------------*/
@@ -112,10 +111,10 @@ module
     wire [(sigWidth + 1)/2:0] close_reduced2SigSum;
     compressBy2#(sigWidth + 2 + (sigWidth & 1))
         compressBy2_close_sigSum(close_adjustedSigSum, close_reduced2SigSum);
-    wire [(alignDistWidth - 1):0] close_normDistReduced2;
-    countLeadingZeros#((sigWidth + 3)/2, alignDistWidth)
+    wire [(4 - 1):0] close_normDistReduced2;
+    countLeadingZeros#((sigWidth + 3)/2, 4)
         countLeadingZeros_close(close_reduced2SigSum, close_normDistReduced2);
-    wire [(alignDistWidth - 1):0] close_nearNormDist =
+    wire [(4 - 1):0] close_nearNormDist =
         close_normDistReduced2<<1;
     wire [(sigWidth + 2):0] close_sigOut =
         (close_sigSum<<close_nearNormDist)<<1;
@@ -134,9 +133,9 @@ module
         compressBy4_far_sigSmaller(
             {far_sigSmaller, 2'b00}, far_reduced4SigSmaller);
     wire [(sigWidth + 1)/4:0] far_roundExtraMask;
-    lowMaskHiLo#(alignDistWidth - 2, (sigWidth + 5)/4, 0)
+    lowMaskHiLo#(4 - 2, (sigWidth + 5)/4, 0)
         lowMask_far_roundExtraMask(
-            alignDist[(alignDistWidth - 1):2], far_roundExtraMask);
+            alignDist[(4 - 1):2], far_roundExtraMask);
     wire [(sigWidth + 2):0] far_alignedSigSmaller =
         {far_mainAlignedSigSmaller>>3,
          (|far_mainAlignedSigSmaller[2:0])

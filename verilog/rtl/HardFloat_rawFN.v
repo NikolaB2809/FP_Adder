@@ -37,14 +37,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 `include "HardFloat_consts.vi"
 `include "HardFloat_specialize.vi"
 
-// Added files
-`include "recFNToRecFN.v"
-
 /*----------------------------------------------------------------------------
 *----------------------------------------------------------------------------*/
 
 module
-    recFNToRawFN#(parameter expWidth = 3, parameter sigWidth = 3) (
+    recFNToRawFN#(parameter expWidth = 8, parameter sigWidth = 24) (
         input [(expWidth + sigWidth):0] in,
         output isNaN,
         output isInf,
@@ -75,10 +72,10 @@ endmodule
 
 module
     roundAnyRawFNToRecFN#(
-        parameter inExpWidth = 3,
-        parameter inSigWidth = 3,
-        parameter outExpWidth = 3,
-        parameter outSigWidth = 3,
+        parameter inExpWidth = 8,
+        parameter inSigWidth = 8,
+        parameter outExpWidth = 24,
+        parameter outSigWidth = 24,
         parameter options = 0
     ) (
         input [(`floatControlWidth - 1):0] control,
@@ -325,8 +322,8 @@ endmodule
 
 module
     roundRawFNToRecFN#(
-        parameter expWidth = 3,
-        parameter sigWidth = 3,
+        parameter expWidth = 8,
+        parameter sigWidth = 24,
         parameter options = 0
     ) (
         input [(`floatControlWidth - 1):0] control,
@@ -358,104 +355,6 @@ module
             out,
             exceptionFlags
         );
-
-endmodule
-
-// DWP (BSG) 02/01/2023
-// This module is used for mixed-precision operations
-// The input is a RAW FP value which is then
-//   - rounded to the max precision
-//   - rounded to an intermediate precision and upconverted back to a higher precision
-// Output is recoded
-
-module
-    roundRawFNtoRecFN_mixed#(
-      parameter fullExpWidth = 3,
-      parameter fullSigWidth = 3,
-      parameter midExpWidth = 3,
-      parameter midSigWidth = 3,
-      parameter outExpWidth = 3,
-      parameter outSigWidth = 3
-  ) (
-      input [(`floatControlWidth - 1):0] control,
-      input invalidExc,     // overrides 'infiniteExc' and 'in_*' inputs
-      input infiniteExc,    // overrides 'in_*' inputs except 'in_sign'
-      input in_isNaN,
-      input in_isInf,
-      input in_isZero,
-      input in_sign,
-      input signed [(fullExpWidth + 1):0] in_sExp,   // limited range allowed
-      input [(fullSigWidth + 2):0] in_sig,
-      input [2:0] roundingMode,
-      output [(outExpWidth + outSigWidth):0] fullOut,
-      output [4:0] fullExceptionFlags,
-      output [(outExpWidth + outSigWidth):0] midOut,
-      output [4:0] midExceptionFlags
-  );
-
-  // synopsys translate_off
-  if ((midExpWidth > fullExpWidth) || (midSigWidth > fullSigWidth))
-    $error("Intermediate rounding must be smaller than input");
-
-  if ((midExpWidth > outExpWidth) || (midSigWidth > outSigWidth))
-    $error("Intermediate rounding must be smaller than output");
-  // synopsys translate_on
-
-  roundAnyRawFNToRecFN
-   #(.inExpWidth(fullExpWidth)
-     ,.inSigWidth(fullSigWidth+2) // See the HardFloat docs for an explanation
-     ,.outExpWidth(fullExpWidth)
-     ,.outSigWidth(fullSigWidth)
-     )
-   round64
-    (.control(control)
-     ,.invalidExc(invalidExc)
-     ,.infiniteExc(infiniteExc)
-     ,.in_isNaN(in_isNaN)
-     ,.in_isInf(in_isInf)
-     ,.in_isZero(in_isZero)
-     ,.in_sign(in_sign)
-     ,.in_sExp(in_sExp)
-     ,.in_sig(in_sig)
-     ,.roundingMode(roundingMode)
-
-     ,.out(fullOut)
-     ,.exceptionFlags(fullExceptionFlags)
-     );
-
-  wire [(midExpWidth + midSigWidth):0] midResult;
-  roundAnyRawFNToRecFN
-   #(.inExpWidth(fullExpWidth)
-     ,.inSigWidth(fullSigWidth+2) // See the HardFloat docs for an explanation
-     ,.outExpWidth(midExpWidth)
-     ,.outSigWidth(midSigWidth)
-     )
-   round32
-    (.control(control)
-     ,.invalidExc(invalidExc)
-     ,.infiniteExc(infiniteExc)
-     ,.in_isNaN(in_isNaN)
-     ,.in_isInf(in_isInf)
-     ,.in_isZero(in_isZero)
-     ,.in_sign(in_sign)
-     ,.in_sExp(in_sExp)
-     ,.in_sig(in_sig)
-     ,.roundingMode(roundingMode)
-
-     ,.out(midResult)
-     ,.exceptionFlags(midExceptionFlags)
-     );
-
-  recFNToRecFN_unsafe
-   #(.inExpWidth(midExpWidth)
-     ,.inSigWidth(midSigWidth)
-     ,.outExpWidth(outExpWidth)
-     ,.outSigWidth(outSigWidth)
-     )
-   recover
-    (.in(midResult)
-     ,.out(midOut)
-     );
 
 endmodule
 

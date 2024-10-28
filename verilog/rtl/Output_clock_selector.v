@@ -7,4 +7,4 @@ module Output_clock_selector(
 
 assign clk_out = (!sel_in & clk_internal_in) | (sel_in & clk_external_in);
 
-endmodule;
+endmodule

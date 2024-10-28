@@ -18,7 +18,7 @@ always @(posedge(clk_in) or posedge(rst_in)) begin
             out <= 1'b0;
         end
         if (in == 1'b1 & start == 1'b0) begin
-            start = 1'b1;
+            start <= 1'b1;
             out <= 1'b0;
         end else if (start == 1'b1) begin
             if (count > 31) begin

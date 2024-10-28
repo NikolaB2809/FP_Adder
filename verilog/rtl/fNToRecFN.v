@@ -38,7 +38,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *----------------------------------------------------------------------------*/
 
 module
-    fNToRecFN#(parameter expWidth = 3, parameter sigWidth = 3) (
+    fNToRecFN#(parameter expWidth = 8, parameter sigWidth = 24) (
         input [(expWidth + sigWidth - 1):0] in,
         output [(expWidth + sigWidth):0] out
     );

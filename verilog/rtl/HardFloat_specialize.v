@@ -56,7 +56,7 @@ endmodule
 *----------------------------------------------------------------------------*/
 
 module
-    propagateFloatNaN_add#(parameter sigWidth = 3) (
+    propagateFloatNaN_add#(parameter sigWidth = 24) (
         input [(`floatControlWidth - 1):0] control,
         input subOp,
         input isNaNA,

@@ -116,10 +116,10 @@ Output_reg output_reg(
     .serial_out(serial_out)
 );
 
-assign input_rdy = ((input_rdy_shift_reg_1 & !en_shift_reg1) | (input_rdy_shift_reg_2  & !en_shift_reg2) |
-                    (input_rdy_shift_reg_3  & !en_shift_reg3) | (input_rdy_shift_reg_4  & !en_shift_reg1)) & output_reg_input_rdy;
+assign input_rdy = ((input_rdy_shift_reg_1 & setup_reg_out[1]) | (input_rdy_shift_reg_2  & setup_reg_out[2]) |
+                    (input_rdy_shift_reg_3  & setup_reg_out[3]) | (input_rdy_shift_reg_4  & setup_reg_out[4])) & output_reg_input_rdy;
 assign delay_in = wr_in & (setup_reg_out[1] | setup_reg_out[2] |
                             setup_reg_out[3] | setup_reg_out[4]);
 
 
-endmodule;
+endmodule

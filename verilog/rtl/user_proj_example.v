@@ -68,6 +68,7 @@ module user_proj_example #(
         .serial_out(io_out[2])
     );
 
+    assign io_out[15:3] = 13'h0; 
     assign io_oeb = 16'h0;
 
 

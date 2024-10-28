@@ -38,7 +38,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *----------------------------------------------------------------------------*/
 
 module
-    recFNToFN#(parameter expWidth = 3, parameter sigWidth = 3) (
+    recFNToFN#(parameter expWidth = 8, parameter sigWidth = 24) (
         input [(expWidth + sigWidth):0] in,
         output [(expWidth + sigWidth - 1):0] out
     );
@@ -55,13 +55,7 @@ module
     wire [sigWidth:0] sig;
     recFNToRawFN#(expWidth, sigWidth)
         recFNToRawFN(in, isNaN, isInf, isZero, sign, sExp, sig);
-    // FIX provided by John Hauser.
-    // if the input is recoded infinity with x in sig and exp fields,
-    // isSubnormal also turns x, and fractOut becomes x.
-    // wire isSubnormal = (sExp < minNormExp);
-    wire isSubnormal =
-        ((sExp>>(expWidth - 2) == 'b010) && (sExp[(expWidth - 3):0] <= 1))
-            || (sExp>>(expWidth - 1) == 'b00);
+    wire isSubnormal = (sExp < minNormExp);
     /*------------------------------------------------------------------------
     *------------------------------------------------------------------------*/
     wire [(normDistWidth - 1):0] denormShiftDist = minNormExp - 1 - sExp;
