@@ -12,3 +12,6 @@
 /dependencies
 /mgmt_core_wrapper
 /logs
+/gds/user_proj_example.gds
+/gds/user_proj_wrapper.gds
+*.gds
