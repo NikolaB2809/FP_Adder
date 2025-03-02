@@ -56,6 +56,8 @@ endtask
 
 
 initial begin
+    $dumpfile("./build/Adder_module_tb.vcd");
+    $dumpvars(0, Adder_module_tb);
     roundingMode <= 3'b000;
     a <= 16'h0000;
     b <= 16'h0000;
