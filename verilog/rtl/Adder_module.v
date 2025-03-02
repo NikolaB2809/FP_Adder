@@ -5,47 +5,51 @@
 module Adder_module(
     input [(`floatControlWidth - 1):0] control,
     input [2:0] subOp,
-    input [31:0] a,
-    input [31:0] b,
-    input [31:0] c,
-    input [31:0] d,
+    input [15:0] a,
+    input [15:0] b,
+    input [15:0] c,
+    input [15:0] d,
     input [2:0] roundingMode,
-    output [31:0] out,
+    output [15:0] out,
     output [4:0] exceptionFlags
 );
 
-wire [32:0] left_out;
-wire [32:0] right_out;
+localparam WIDTH = 16;
+localparam EXP_WIDTH = 5;
+localparam MANTISSA_WIDTH = 11;
+
+wire [WIDTH:0] left_out;
+wire [WIDTH:0] right_out;
 wire [4:0] left_exceptionFlags;
 wire [4:0] right_exceptionFlags;
 wire [4:0] center_exceptionFlags;
-wire [32:0] a_recFN;
-wire [32:0] b_recFN;
-wire [32:0] c_recFN;
-wire [32:0] d_recFN;
-wire [32:0] out_recFN;
+wire [WIDTH:0] a_recFN;
+wire [WIDTH:0] b_recFN;
+wire [WIDTH:0] c_recFN;
+wire [WIDTH:0] d_recFN;
+wire [WIDTH:0] out_recFN;
 
-fNToRecFN#(8, 24) a_conversion(
+fNToRecFN#(EXP_WIDTH, MANTISSA_WIDTH) a_conversion(
     .in(a),
     .out(a_recFN)
 );
 
-fNToRecFN#(8, 24) b_conversion(
+fNToRecFN#(EXP_WIDTH, MANTISSA_WIDTH) b_conversion(
     .in(b),
     .out(b_recFN)
 );
 
-fNToRecFN#(8, 24) c_conversion(
+fNToRecFN#(EXP_WIDTH, MANTISSA_WIDTH) c_conversion(
     .in(c),
     .out(c_recFN)
 );
 
-fNToRecFN#(8, 24) d_conversion(
+fNToRecFN#(EXP_WIDTH, MANTISSA_WIDTH) d_conversion(
     .in(d),
     .out(d_recFN)
 );
 
-addRecFN#(8, 24) Left_adder(
+addRecFN#(EXP_WIDTH, MANTISSA_WIDTH) Left_adder(
     .control(control),
     .subOp(subOp[2]),
     .a(a_recFN),
@@ -55,7 +59,7 @@ addRecFN#(8, 24) Left_adder(
     .exceptionFlags(left_exceptionFlags)
 );
 
-addRecFN#(8, 24) Right_adder(
+addRecFN#(EXP_WIDTH, MANTISSA_WIDTH) Right_adder(
     .control(control),
     .subOp(subOp[0]),
     .a(c_recFN),
@@ -65,7 +69,7 @@ addRecFN#(8, 24) Right_adder(
     .exceptionFlags(right_exceptionFlags)
 );
 
-addRecFN#(8, 24) Center_adder(
+addRecFN#(EXP_WIDTH, MANTISSA_WIDTH) Center_adder(
     .control(control),
     .subOp(subOp[1]),
     .a(left_out),
@@ -75,7 +79,7 @@ addRecFN#(8, 24) Center_adder(
     .exceptionFlags(center_exceptionFlags)
 );
 
-recFNToFN#(8, 24) out_conversion(
+recFNToFN#(EXP_WIDTH, MANTISSA_WIDTH) out_conversion(
     .in(out_recFN),
     .out(out)
 );
