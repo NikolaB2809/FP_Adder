@@ -1,16 +1,21 @@
 module Output_reg_tb;
 
-reg [31:0] parallel_in;
+localparam WIDTH = 16;
+
+reg [WIDTH-1:0] parallel_in;
 reg clk_in;
 reg rst_in;
 reg wr_in;
 reg output_read_in;
 wire output_rdy;
-wire input_rdy;
 wire serial_out;
 
-reg [31:0] result;
+reg [WIDTH-1:0] result;
 integer i;
+integer iteration;
+integer num_of_tests;
+integer test_failed;
+integer passed_tests;
 
 Output_reg dut(
     .parallel_in(parallel_in),
@@ -19,7 +24,6 @@ Output_reg dut(
     .wr_in(wr_in),
     .output_read_in(output_read_in),
     .output_rdy(output_rdy),
-    .input_rdy(input_rdy),
     .serial_out(serial_out)
 );
 
@@ -28,50 +32,55 @@ always begin
 end
 
 task check;
-        input [31:0] in;  // Inputs to apply
-        input [31:0] expected;  // Expected result
+        input [WIDTH-1:0] in;  // Inputs to apply
+        input [WIDTH-1:0] expected;  // Expected result
         begin
             wr_in <= 1'b1;
             parallel_in <= in;
-            if (input_rdy == 1'b0) begin
-                $display("Test failed for in = 0x%0h: input_rdy = 0x%0b; expected: 1", in, input_rdy);
-            end
+            test_failed = 0;
             if (output_rdy == 1'b1) begin
                 $display("Test failed for in = 0x%0h: output_rdy = 0x%0b; expected: 0", in, output_rdy);
+                test_failed = 1;
             end
             #10;
             wr_in <= 1'b0;
+            if (output_rdy == 1'b0) begin
+                $display("Test failed for in = 0x%0h: output_rdy = 0x%0b; expected: 1", in, output_rdy);
+                test_failed = 1;
+            end
             output_read_in <= 1'b1;
             #10;
-            for (i = 0; i < 32; i = i + 1) begin
+            for (i = 0; i < 16; i = i + 1) begin
                 result[i] <= serial_out;
-                if (output_rdy == 1'b0 && i < 31) begin
-                    $display("Test failed for in = 0x%0h; output_rdy = 0x%0h; expected: 1; iteration: %d", in, output_rdy, i);
-                end
                 #10;
             end
             output_read_in <= 1'b0;
             if (result !== expected) begin
                 $display("Test failed for in = 0x%0h: expected: 0x%0h, got: 0x%0h", in, expected, result);
-            end else begin
-                $display("Test passed for in = 0x%0h; Result: 0x%0h", in, result);
+                test_failed = 1;
+            end
+            num_of_tests = num_of_tests + 1;
+            if (test_failed == 0) begin
+                passed_tests = passed_tests + 1;
             end
         end
     endtask
 
 initial begin
-    parallel_in = 32'h00000000;
+    parallel_in = 16'h0000;
     clk_in = 1'b0;
     rst_in = 1'b1;
     wr_in = 1'b0;
     output_read_in = 1'b0;
+    num_of_tests = 0;
+    passed_tests = 0;
     #10;
     rst_in = 0;
     #10;
-    check(32'h00000000, 32'h00000000);
-    check(32'haaaaaaaa, 32'haaaaaaaa);
-    check(32'habcd1110, 32'habcd1110);
-    check(32'hf89123de, 32'hf89123de);
+    for (iteration = 0; iteration <= 16'hffff; iteration = iteration + 1) begin
+        check(iteration[WIDTH-1:0], iteration[WIDTH-1:0]);
+    end
+    $display("Passed tests: %d/%d", passed_tests, num_of_tests);
     $finish;
 end
 
