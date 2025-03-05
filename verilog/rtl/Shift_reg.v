@@ -29,15 +29,10 @@ always @(posedge(clk_in) or posedge(rst_in)) begin
                 value[i - 1] <= value[i];
             end
             value[WIDTH-1] <= serial_in;
-            if (count == 4'b1111) begin
-                count <= 4'b0000;
-                input_rdy <= 1'b1;
+            if (input_rdy == 1'b1) begin
+                input_rdy <= 1'b0;
             end else begin
-                if (input_rdy == 1'b1) begin
-                    input_rdy <= 1'b0;
-                end else begin
-                    count <= count + 1;
-                end
+                count <= count + 1;
             end
         end
         if (en_in == 1'b1) begin

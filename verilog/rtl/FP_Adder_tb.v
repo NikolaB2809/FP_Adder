@@ -1,5 +1,7 @@
 module FP_Adder_tb;
 
+localparam WIDTH = 16;
+
 reg serial1_in;
 reg serial2_in;
 reg serial3_in;
@@ -14,8 +16,11 @@ wire input_rdy;
 wire output_rdy;
 wire serial_out;
 
+integer iterations;
+integer passed_tests;
+
 integer i;
-reg [31:0] result;
+reg [WIDTH-1:0] result;
 
 FP_Adder dut(
     .serial1_in(serial1_in),
@@ -38,23 +43,31 @@ always begin
 end
 
 task check;
-    input [31:0] a_in;
-    input [31:0] b_in;
-    input [31:0] c_in;
-    input [31:0] d_in;
+    input [WIDTH-1:0] a_in;
+    input [WIDTH-1:0] b_in;
+    input [WIDTH-1:0] c_in;
+    input [WIDTH-1:0] d_in;
     input [7:0] setup_in;
-    input [31:0] expected;  // Expected result
+    input [WIDTH-1:0] expected;  // Expected result
     begin
+        iterations = iterations + 1;
         wr_in <= 1'b1;
         setup_serial_in <= 1'b0;
-        result <= 32'h00000000;
-        for (i = 0; i < 32; i = i + 1) begin
+        result <= 16'h0000;
+        if (input_rdy != 1'b1) begin
+            $display("Time: %0t", $time);
+            $display("Test failed for: ");
+            $display("a = 0x%0h; b = 0x%0h;", a_in, b_in);
+            $display("c = 0x%0h; d = 0x%0h;", c_in, d_in);
+            $display("Input ready signal not set");
+        end
+        for (i = 0; i < WIDTH; i = i + 1) begin
             serial1_in <= d_in[i];
             serial2_in <= c_in[i];
             serial3_in <= b_in[i];
             serial4_in <= a_in[i];
-            if (i > 23) begin
-                setup_serial_in <= setup_in[i - 24];
+            if (i < 8) begin
+                setup_serial_in <= setup_in[i];
             end
             #10;
         end
@@ -63,14 +76,14 @@ task check;
         #30;
         output_read_in <= 1'b1;
         #10;
-        for (i = 0; i < 32; i = i + 1) begin
+        for (i = 0; i < WIDTH; i = i + 1) begin
             result[i] <= serial_out;
             #10;
         end
         output_read_in <= 1'b0;
         #10;
-        $display("Time: %0t", $time);
         if (result !== expected) begin
+            $display("Time: %0t", $time);
             $display("Test failed for: ");
             $display("a = 0x%0h; b = 0x%0h;", a_in, b_in);
             $display("c = 0x%0h; d = 0x%0h;", c_in, d_in);
@@ -78,8 +91,7 @@ task check;
             $display("Result: 0x%0h; Expected: 0x%0h", result, expected);
             $display(" ");
         end else begin
-            $display("Test successful; Result: 0x%0h", result);
-            $display(" ");
+            passed_tests = passed_tests + 1;
         end
     end
 endtask
@@ -87,6 +99,8 @@ endtask
 initial begin
     $dumpfile("FP_Adder_tb.vcd");  // Specify VCD file name
     $dumpvars(0, FP_Adder_tb);     // Dump all variables in the module
+    iterations = 0;
+    passed_tests = 0;
     serial1_in <= 1'b0;
     serial2_in <= 1'b0;
     serial3_in <= 1'b0;
@@ -100,12 +114,17 @@ initial begin
     #10;
     rst_in <= 1'b0;
     #10;
-    check(32'h3f800000, 32'h3f800000, 32'h3f800000, 32'h3f800000, 8'b00011110, 32'h40800000);
-    check(32'hbf800001, 32'h00000000, 32'h00000000, 32'h00000000, 8'b00011110, 32'hbf800001);
-    check(32'hbf800000, 32'hbf800000, 32'hbf800000, 32'hbf800000, 8'b00011110, 32'hc0800000);
-    check(32'h3f800000, 32'h3f800000, 32'h3f800000, 32'h3f800000, 8'b00011000, 32'h40000000);
-    check(32'hc1200000, 32'hc1200000, 32'hc1200000, 32'hc1200000, 8'b10111110, 32'h00000000);
-    check(32'h42810000, 32'h42010000, 32'h41020000, 32'h00000000, 8'b01011110, 32'h42b14000);
+    check(16'h0000, 16'h0000, 16'h0000, 16'habcd, 8'b00011100, 16'h0000);
+    check(16'h3C00, 16'h3C00, 16'h0000, 16'h0000, 8'b00011110, 16'h4000); // 1.0 + 1.0 = 2.0
+    check(16'h4000, 16'h4000, 16'h3C00, 16'h1111, 8'b00011100, 16'h4500); // 2.0 + 2.0 + 1.0 = 5.0
+    check(16'h4200, 16'hC200, 16'h0000, 16'h0000, 8'b00011110, 16'h0000); // 5.0 - 5.0 = 0.0
+    check(16'h4200, 16'h4200, 16'h4200, 16'h4200, 8'b10011000, 16'h0000); // 5.0 + (- 5.0) = 0.0
+    check(16'h4880, 16'h3C00, 16'h3800, 16'h3400, 8'b00011110, 16'h4960); // 9.0 + 1.0 + 0.5 + 0.25 = 10.75
+    check(16'h3C00, 16'h4000, 16'h4500, 16'h4B00, 8'b10111110, 16'hC900); // 1.0 - 2.0 + 5.0 - 14.0 = -10.0
+    check(16'h3C00, 16'hBC00, 16'h0000, 16'h0000, 8'b00011110, 16'h0000); // 1.0 + (-1.0) = 0.0
+    check(16'h3C00, 16'hBC00, 16'h0000, 16'h0000, 8'b10011110, 16'h4000); // 1.0 - (-1.0) = 2.0
+    check(16'h3C00, 16'h3C00, 16'h3C00, 16'h3C00, 8'b00011110, 16'h4400); // 1.0 + 1.0 + 1.0 + 1.0 = 4.0
+    $display("Passed tests: %d/%d", passed_tests, iterations);
     $finish;
 end
 

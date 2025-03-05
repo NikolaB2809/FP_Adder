@@ -21,14 +21,15 @@ module FP_Adder(
     output serial_out
 );
 
+localparam WIDTH = 16;
+
 wire en_shift_reg1, en_shift_reg2, en_shift_reg3, en_shift_reg4;
 wire input_rdy_shift_reg_1, input_rdy_shift_reg_2, input_rdy_shift_reg_3, input_rdy_shift_reg_4;
-wire [31:0] parallel1_out, parallel2_out, parallel3_out, parallel4_out;
+wire [WIDTH-1:0] parallel1_out, parallel2_out, parallel3_out, parallel4_out;
 wire [7:0] setup_reg_out;
 wire [2:0] sub_internal;
-wire [31:0] adder_out_internal;
+wire [WIDTH-1:0] adder_out_internal;
 wire output_reg_clk;
-wire output_reg_input_rdy;
 wire delay_in;
 wire delay_out;
 
@@ -112,12 +113,10 @@ Output_reg output_reg(
     .wr_in(delay_out),
     .output_read_in(output_read_in),
     .output_rdy(output_rdy),
-    .input_rdy(output_reg_input_rdy),
     .serial_out(serial_out)
 );
 
-assign input_rdy = ((input_rdy_shift_reg_1 & setup_reg_out[1]) | (input_rdy_shift_reg_2  & setup_reg_out[2]) |
-                    (input_rdy_shift_reg_3  & setup_reg_out[3]) | (input_rdy_shift_reg_4  & setup_reg_out[4])) & output_reg_input_rdy;
+assign input_rdy = input_rdy_shift_reg_1 | input_rdy_shift_reg_2 | input_rdy_shift_reg_3 | input_rdy_shift_reg_4;
 assign delay_in = wr_in & (setup_reg_out[1] | setup_reg_out[2] |
                             setup_reg_out[3] | setup_reg_out[4]);
 

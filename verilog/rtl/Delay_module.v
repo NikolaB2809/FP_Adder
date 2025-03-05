@@ -2,35 +2,29 @@ module Delay_module(
     input in,
     input clk_in,
     input rst_in,
-    output reg out
+    output out
 );
 
-reg [5:0] count;
-reg start;
+localparam DELAY = 17;
+integer i;
+
+reg [DELAY-1:0] shift_register;
 
 always @(posedge(clk_in) or posedge(rst_in)) begin
     if (rst_in == 1'b1) begin
-        count <= 6'b0;
-        start <= 1'b0;
-        out <= 1'b0;
+        shift_register <= 16'h0000;
     end else begin
-        if (start == 1'b0) begin 
-            out <= 1'b0;
+        if (~|shift_register & in) begin
+            shift_register[DELAY-1] <= in;
+        end else begin
+            shift_register[DELAY-1] <= 1'b0;
         end
-        if (in == 1'b1 & start == 1'b0) begin
-            start <= 1'b1;
-            out <= 1'b0;
-        end else if (start == 1'b1) begin
-            if (count > 31) begin
-                out <= 1'b1;
-                start <= 1'b0;
-                count <= 6'b0;
-            end else begin
-                out <= 1'b0;
-                count <= count + 1;
-            end
+        for (i = DELAY - 1; i > 0; i = i - 1) begin
+            shift_register[i - 1] <= shift_register[i];
         end
     end
 end
+
+assign out = shift_register[0];
 
 endmodule
